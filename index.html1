@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>نموذج مستفيد بنكي</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{
+font-family:Arial;
+background:#f5f5f5;
+margin:0;
+padding:0;
+}
+header{
+background:#0f766e;
+color:white;
+padding:15px;
+text-align:center;
+font-size:20px;
+}
+.section{
+background:white;
+margin:15px;
+padding:15px;
+border-radius:8px;
+box-shadow:0 0 5px #ccc;
+}
+input,select{
+width:100%;
+padding:10px;
+margin:5px 0 10px;
+border:1px solid #ccc;
+border-radius:5px;
+}
+button{
+background:#0f766e;
+color:white;
+border:none;
+padding:12px;
+width:100%;
+border-radius:6px;
+font-size:16px;
+cursor:pointer;
+}
+button:hover{
+background:#115e59;
+}
+.status{
+color:green;
+font-size:14px;
+}
+</style>
+</head>
+
+<body>
+
+<header>إضافة مستفيد بنكي</header>
+
+<div class="section">
+<h3>البلد والعملة</h3>
+
+<label>الدولة</label>
+<input id="country">
+
+<label>العملة</label>
+<input value="USD">
+</div>
+
+<div class="section">
+<h3>بيانات البنك</h3>
+
+<label>IBAN</label>
+<input id="iban" onblur="fetchIBAN()">
+
+<label>SWIFT</label>
+<input id="swift" onblur="fetchSWIFT()">
+
+<label>اسم البنك</label>
+<input id="bank">
+
+<label>المدينة</label>
+<input id="city">
+
+<label>العنوان</label>
+<input id="address">
+</div>
+
+<div class="section">
+<h3>بيانات المستفيد</h3>
+
+<label>الاسم الكامل</label>
+<input>
+
+<label>الهاتف</label>
+<input>
+
+<label>العنوان</label>
+<input>
+</div>
+
+<div class="section">
+<button onclick="save()">حفظ البيانات</button>
+<p class="status" id="status"></p>
+</div>
+
+<script>
+async function fetchIBAN(){
+let iban=document.getElementById("iban").value.trim();
+if(!iban) return;
+
+let r=await fetch("https://openiban.com/validate/"+iban+"?getBIC=true&validateBankCode=true");
+let j=await r.json();
+
+if(j.valid){
+document.getElementById("swift").value=j.bankData.bic;
+document.getElementById("bank").value=j.bankData.name;
+document.getElementById("country").value=j.countryCode;
+}
+}
+
+async function fetchSWIFT(){
+let swift=document.getElementById("swift").value.trim();
+if(!swift) return;
+
+let r=await fetch("https://openiban.com/bic/"+swift);
+let j=await r.json();
+
+if(j.valid){
+document.getElementById("bank").value=j.bank;
+document.getElementById("city").value=j.city;
+document.getElementById("country").value=j.country;
+}
+}
+
+function save(){
+localStorage.setItem("bankform",JSON.stringify({
+iban:iban.value,
+swift:swift.value,
+bank:bank.value,
+city:city.value,
+address:address.value
+}));
+
+status.innerText="✅ تم الحفظ بنجاح";
+}
+</script>
+
+</body>
+</html>
